@@ -49,6 +49,13 @@ class AIAssistantServiceProvider extends ServiceProvider
                 Route::get('/metadata', [\LaravelAIAssistant\Controllers\AIDynamicController::class, 'getMetadata']);
             });
 
+        // Authentication endpoints (no middleware for testing)
+        Route::prefix(config('ai-assistant.api.prefix', 'api/ai'))
+            ->middleware(['throttle:60,1'])
+            ->group(function () {
+                Route::post('/auth/validate', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'validateToken']);
+            });
+
         // Protected API endpoints (authentication required)
         Route::prefix(config('ai-assistant.api.prefix', 'api/ai'))
             ->middleware(config('ai-assistant.api.middleware', ['auth:sanctum', 'ai.security']))
@@ -58,7 +65,6 @@ class AIAssistantServiceProvider extends ServiceProvider
                 
                 // Authentication endpoints
                 Route::post('/auth/token', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'generateToken']);
-                Route::post('/auth/validate', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'validateToken']);
                 
                 // Conversation management
                 Route::get('/conversations', [\LaravelAIAssistant\Controllers\AIConversationController::class, 'index']);
