@@ -53,7 +53,7 @@ class AIAssistantServiceProvider extends ServiceProvider
         Route::prefix(config('ai-assistant.api.prefix', 'api/ai'))
             ->middleware(['throttle:60,1'])
             ->group(function () {
-                Route::post('/auth/validate', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'validateToken']);
+                Route::match(['GET', 'POST'], '/auth/validate', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'validateToken']);
             });
 
         // Protected API endpoints (authentication required)
