@@ -3,6 +3,7 @@
     "description": "A dynamic AI assistant package for Laravel applications that automatically discovers schema and provides real-time AI capabilities",
     "type": "library",
     "license": "MIT",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "DITS SA",
@@ -42,7 +43,7 @@
             ]
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "homepage": "https://github.com/dits-sa/laravel-ai-assistant",
     "support": {
