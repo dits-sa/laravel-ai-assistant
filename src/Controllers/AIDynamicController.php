@@ -68,6 +68,7 @@ class AIDynamicController extends Controller
                 'update' => $this->updateModel($modelClass, $request),
                 'delete' => $this->deleteModel($modelClass, $request),
                 'show' => $this->showModel($modelClass, $request),
+                'count' => $this->countModel($modelClass, $request),
                 default => response()->json([
                     'success' => false,
                     'error' => 'Invalid operation',
@@ -382,5 +383,36 @@ class AIDynamicController extends Controller
         }
         
         return $query;
+    }
+
+    /**
+     * Count model records.
+     */
+    private function countModel(string $modelClass, Request $request): JsonResponse
+    {
+        try {
+            $query = $modelClass::query();
+            
+            // Apply filters if provided
+            if ($request->has('filters')) {
+                $query = $this->applyFilters($query, $request->get('filters'));
+            }
+            
+            $count = $query->count();
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'count' => $count,
+                    'model' => $modelClass
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Count operation failed',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

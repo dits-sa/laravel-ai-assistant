@@ -42,18 +42,15 @@ class AIAssistantServiceProvider extends ServiceProvider
      */
     private function loadRoutes(): void
     {
-        // Public metadata endpoint (no authentication required)
+        // Public endpoints (no authentication required)
         Route::prefix(config('ai-assistant.api.prefix', 'api/ai'))
             ->middleware(['throttle:60,1']) // Only rate limiting
             ->group(function () {
                 Route::get('/metadata', [\LaravelAIAssistant\Controllers\AIDynamicController::class, 'getMetadata']);
-            });
-
-        // Authentication endpoints (no middleware for testing)
-        Route::prefix(config('ai-assistant.api.prefix', 'api/ai'))
-            ->middleware(['throttle:60,1'])
-            ->group(function () {
                 Route::match(['GET', 'POST'], '/auth/validate', [\LaravelAIAssistant\Controllers\AIAuthController::class, 'validateToken']);
+                // Model operations for AI (JWT authenticated)
+                Route::any('/models/{modelName}', [\LaravelAIAssistant\Controllers\AIDynamicController::class, 'handleModelOperation'])
+                    ->middleware(['ai.jwt']); // Custom JWT middleware
             });
 
         // Protected API endpoints (authentication required)
@@ -114,5 +111,6 @@ class AIAssistantServiceProvider extends ServiceProvider
     private function registerMiddleware(): void
     {
         $this->app['router']->aliasMiddleware('ai.security', \LaravelAIAssistant\Middleware\AISecurityMiddleware::class);
+        $this->app['router']->aliasMiddleware('ai.jwt', \LaravelAIAssistant\Middleware\AIJWTMiddleware::class);
     }
 }
