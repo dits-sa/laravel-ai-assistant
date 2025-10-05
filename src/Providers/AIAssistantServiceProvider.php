@@ -34,6 +34,7 @@ class AIAssistantServiceProvider extends ServiceProvider
         $this->publishConfig();
         $this->publishMigrations();
         $this->registerCommands();
+        $this->registerMiddleware();
     }
 
     /**
@@ -99,5 +100,13 @@ class AIAssistantServiceProvider extends ServiceProvider
                 \LaravelAIAssistant\Commands\InstallAICommand::class,
             ]);
         }
+    }
+
+    /**
+     * Register package middleware.
+     */
+    private function registerMiddleware(): void
+    {
+        $this->app['router']->aliasMiddleware('ai.security', \LaravelAIAssistant\Middleware\AISecurityMiddleware::class);
     }
 }
