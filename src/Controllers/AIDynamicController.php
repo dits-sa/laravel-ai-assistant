@@ -5,6 +5,7 @@ namespace LaravelAIAssistant\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Routing\Controller;
 use LaravelAIAssistant\Services\SchemaAnalyzer;
 use LaravelAIAssistant\Services\AIMetadataGenerator;
 
