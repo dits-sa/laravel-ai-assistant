@@ -137,18 +137,31 @@ class SchemaAnalyzer
             $methodName = $method->getName();
             $returnType = $method->getReturnType();
             
-            if ($returnType && 
-                (str_contains($returnType->getName(), 'Relation') || 
-                 str_contains($returnType->getName(), 'BelongsTo') ||
-                 str_contains($returnType->getName(), 'HasMany') ||
-                 str_contains($returnType->getName(), 'HasOne') ||
-                 str_contains($returnType->getName(), 'BelongsToMany') ||
-                 str_contains($returnType->getName(), 'MorphTo') ||
-                 str_contains($returnType->getName(), 'MorphMany'))) {
+            $returnTypeName = null;
+            if ($returnType) {
+                if ($returnType instanceof \ReflectionNamedType) {
+                    $returnTypeName = $returnType->getName();
+                } elseif ($returnType instanceof \ReflectionUnionType) {
+                    $types = $returnType->getTypes();
+                    $returnTypeName = !empty($types) ? $types[0]->getName() : 'mixed';
+                } elseif ($returnType instanceof \ReflectionIntersectionType) {
+                    $types = $returnType->getTypes();
+                    $returnTypeName = !empty($types) ? $types[0]->getName() : 'mixed';
+                }
+            }
+            
+            if ($returnTypeName && 
+                (str_contains($returnTypeName, 'Relation') || 
+                 str_contains($returnTypeName, 'BelongsTo') ||
+                 str_contains($returnTypeName, 'HasMany') ||
+                 str_contains($returnTypeName, 'HasOne') ||
+                 str_contains($returnTypeName, 'BelongsToMany') ||
+                 str_contains($returnTypeName, 'MorphTo') ||
+                 str_contains($returnTypeName, 'MorphMany'))) {
                 
                 $relationships[$methodName] = [
-                    'type' => $this->getRelationshipType($returnType->getName()),
-                    'return_type' => $returnType->getName(),
+                    'type' => $this->getRelationshipType($returnTypeName),
+                    'return_type' => $returnTypeName,
                     'parameters' => $this->getMethodParameters($method)
                 ];
             }
@@ -425,9 +438,26 @@ class SchemaAnalyzer
         $parameters = [];
         
         foreach ($method->getParameters() as $param) {
+            $type = $param->getType();
+            $typeName = null;
+            
+            if ($type) {
+                if ($type instanceof \ReflectionNamedType) {
+                    $typeName = $type->getName();
+                } elseif ($type instanceof \ReflectionUnionType) {
+                    // For union types, get the first type or create a generic description
+                    $types = $type->getTypes();
+                    $typeName = !empty($types) ? $types[0]->getName() : 'mixed';
+                } elseif ($type instanceof \ReflectionIntersectionType) {
+                    // For intersection types, get the first type or create a generic description
+                    $types = $type->getTypes();
+                    $typeName = !empty($types) ? $types[0]->getName() : 'mixed';
+                }
+            }
+            
             $parameters[] = [
                 'name' => $param->getName(),
-                'type' => $param->getType()?->getName(),
+                'type' => $typeName,
                 'required' => !$param->isOptional(),
                 'default' => $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null,
             ];
